@@ -1,11 +1,19 @@
-import { getFeaturedProducts } from "@/service/productService";
 import { successResponse, handleApiError } from "@/lib/response";
+import DB from "@/lib/prisma";
 
 export async function GET() {
   try {
-    const featuredProducts = await getFeaturedProducts();
-    return successResponse(featuredProducts);
+    const products = await DB.product.findMany({
+      include: {
+        images: true,
+        category: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    return successResponse(products);
   } catch (error) {
-    return handleApiError(error, "Error fetching featured products");
+    return handleApiError(error, "Error fetching products");
   }
 }

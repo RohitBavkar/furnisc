@@ -1,10 +1,11 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../app/generated/prisma"
+  provider        = "prisma-client"
+  output          = "../app/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
+  schemas  = ["furnexa"]
 }
 
 model Product {
@@ -30,6 +31,7 @@ model Product {
   
   @@index([categoryId])
   @@index([slug])
+  @@schema("furnexa")
 }
 
 model ProductImage {
@@ -42,6 +44,7 @@ model ProductImage {
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   
   @@index([productId])
+  @@schema("furnexa")
 }
 
 model Category {
@@ -56,6 +59,7 @@ model Category {
   products    Product[]
   
   @@index([slug])
+  @@schema("furnexa")
 }
 
 model Customer {
@@ -71,6 +75,7 @@ model Customer {
   
   @@index([clerkUserId])
   @@index([email])
+  @@schema("furnexa")
 }
 
 model Order {
@@ -90,6 +95,7 @@ model Order {
   @@index([customerId])
   @@index([orderNumber])
   @@index([stripePaymentId])
+  @@schema("furnexa")
 }
 
 model OrderItem {
@@ -105,4 +111,5 @@ model OrderItem {
   
   @@index([orderId])
   @@index([productId])
+  @@schema("furnexa")
 }
