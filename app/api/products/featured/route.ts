@@ -4,12 +4,8 @@ import DB from "@/lib/prisma";
 export async function GET() {
   try {
     const products = await DB.product.findMany({
-      include: {
-        images: true,
-        category: true,
-      },
-      orderBy: {
-        createdAt: "desc",
+      where: {
+        featured: true,
       },
     });
     return successResponse(products);
