@@ -70,7 +70,7 @@ export function FeaturedCarousel({ products }: FeaturedCarouselProps) {
       >
         <CarouselContent className="ml-0">
           {products.map((product) => (
-            <CarouselItem key={product._id} className="pl-0">
+            <CarouselItem key={product.id} className="pl-0">
               <FeaturedSlide product={product} />
             </CarouselItem>
           ))}
@@ -109,8 +109,7 @@ interface FeaturedSlideProps {
 }
 
 function FeaturedSlide({ product }: FeaturedSlideProps) {
-  const mainImage = product.images?.[0]?.asset?.url;
-
+  const mainImage = product.images?.[0]?.url;
   return (
     <div className="flex min-h-[400px] flex-col md:min-h-[450px] md:flex-row lg:min-h-[500px]">
       {/* Image Section - Left side (60% on desktop) */}

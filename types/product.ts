@@ -1,7 +1,9 @@
 export interface ProductImage {
-  asset?: {
-    url: string;
-  };
+  id: string;
+  url: string;
+  altText?: string | null;
+  order: number;
+  productId: string;
 }
 
 export interface ProductCategory {
@@ -9,7 +11,7 @@ export interface ProductCategory {
 }
 
 export interface Product {
-  _id: string;
+  id: string;
   name: string;
   slug: string;
   price: number;

@@ -7,6 +7,9 @@ export async function GET() {
       where: {
         featured: true,
       },
+      include: {
+        images: true,
+      },
     });
     return successResponse(products);
   } catch (error) {
