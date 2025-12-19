@@ -52,7 +52,6 @@ export default async function Home({ searchParams }: HomeProps) {
     sort,
   });
 
-  console.log("Featured Products:", featuredProducts.length);
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900">
       {/* Featured Products Carousel */}
