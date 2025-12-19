@@ -1,4 +1,4 @@
-import { GET_FEATURED_PRODUCTS } from "@/lib/api";
+import { GET_FEATURED_PRODUCTS, GET_FILTERED_PRODUCTS } from "@/lib/api";
 
 export async function getFeaturedProducts() {
   try {
@@ -12,6 +12,55 @@ export async function getFeaturedProducts() {
     return data || [];
   } catch (error) {
     console.error("Error fetching featured products:", error);
+    return [];
+  }
+}
+
+interface FilterOptions {
+  searchQuery?: string;
+  categorySlug?: string;
+  color?: string;
+  material?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  inStock?: boolean;
+  sort?: string;
+}
+
+export async function getFilteredProducts({
+  searchQuery,
+  categorySlug,
+  color,
+  material,
+  minPrice = 0,
+  maxPrice = 0,
+  inStock = false,
+  sort = "name",
+}: FilterOptions) {
+  try {
+    const params = new URLSearchParams();
+
+    if (searchQuery) params.append("q", searchQuery);
+    if (categorySlug) params.append("category", categorySlug);
+    if (color) params.append("color", color);
+    if (material) params.append("material", material);
+    if (minPrice > 0) params.append("minPrice", minPrice.toString());
+    if (maxPrice > 0) params.append("maxPrice", maxPrice.toString());
+    if (inStock) params.append("inStock", "true");
+    if (sort) params.append("sort", sort);
+
+    const response = await fetch(`${GET_FILTERED_PRODUCTS}?${params}`, {
+      method: "GET",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch filtered products");
+    }
+
+    const { data } = await response.json();
+    return data || [];
+  } catch (error) {
+    console.error("Error fetching filtered products:", error);
     return [];
   }
 }
