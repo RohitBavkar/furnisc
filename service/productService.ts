@@ -7,6 +7,7 @@ import {
   GET_FEATURED_PRODUCTS,
   GET_FILTERED_PRODUCTS,
   GET_PRODUCT_BY_SLUG,
+  GET_PRODUCTS_STOCK,
 } from "@/lib/api";
 
 export async function getFeaturedProducts() {
@@ -97,6 +98,26 @@ export async function getFilteredProducts({
     return data || [];
   } catch (error) {
     console.error("Error fetching filtered products:", error);
+    return [];
+  }
+}
+
+export type StockEntry = { id: string; stock: number };
+
+export async function getProductsStock(ids: string[]): Promise<StockEntry[]> {
+  if (!ids || ids.length === 0) return [];
+  try {
+    const url = `${GET_PRODUCTS_STOCK}?ids=${encodeURIComponent(
+      ids.join(",")
+    )}`;
+    const response = await fetch(url, { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error("Failed to fetch stock");
+    }
+    const { data } = (await response.json()) as { data?: StockEntry[] };
+    return data ?? [];
+  } catch (error) {
+    console.error("Error fetching stock:", error);
     return [];
   }
 }
