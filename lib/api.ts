@@ -4,5 +4,6 @@ export const GET_FEATURED_PRODUCTS = `${API_URL}/api/products/featured`;
 export const GET_FILTERED_PRODUCTS = `${API_URL}/api/products/filtered`;
 export const GET_CATEGORIES = `${API_URL}/api/categories`;
 export const GET_PRODUCTS_STOCK = `${API_URL}/api/products/stock`;
+export const GET_PRODUCTS_BY_IDS = `${API_URL}/api/products/by-ids`;
 export const GET_PRODUCT_BY_SLUG = (slug: string) =>
   `${API_URL}/api/products/${slug}`;
