@@ -1,6 +1,6 @@
-import { CategoryTilesSkeleton } from "@/components/Loading/CategoryTilesSkeleton";
-import { ProductFiltersSkeleton } from "@/components/Loading/ProductFiltersSkeleton";
-import { ProductGridSkeleton } from "@/components/Loading/ProductGridSkeleton";
+import { CategoryTilesSkeleton } from "@/components/LandingPage/CategoryTilesSkeleton";
+import { ProductFiltersSkeleton } from "@/components/LandingPage/ProductFiltersSkeleton";
+import { ProductGridSkeleton } from "@/components/LandingPage/ProductGridSkeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function HomeLoading() {

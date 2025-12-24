@@ -6,8 +6,8 @@ import Link from "next/link";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn, formatPrice } from "@/lib/utils";
-import { AddToCartButton } from "@/components/LandingPage/AddToCartButton";
-import { StockBadge } from "@/components/LandingPage/StockBadge";
+import { AddToCartButton } from "@/components/common/AddToCartButton";
+import { StockBadge } from "@/components/common/StockBadge";
 import type {
   Product,
   ProductImage,

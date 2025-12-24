@@ -1,4 +1,13 @@
-import { GET_FEATURED_PRODUCTS, GET_FILTERED_PRODUCTS } from "@/lib/api";
+import type {
+  Category,
+  Product,
+  ProductImage,
+} from "@/app/generated/prisma/client";
+import {
+  GET_FEATURED_PRODUCTS,
+  GET_FILTERED_PRODUCTS,
+  GET_PRODUCT_BY_SLUG,
+} from "@/lib/api";
 
 export async function getFeaturedProducts() {
   try {
@@ -13,6 +22,33 @@ export async function getFeaturedProducts() {
   } catch (error) {
     console.error("Error fetching featured products:", error);
     return [];
+  }
+}
+
+export type ProductWithRelations = Product & {
+  category: Category | null;
+  images: ProductImage[];
+};
+
+export async function getProductBySlug(
+  slug: string
+): Promise<ProductWithRelations | null> {
+  try {
+    const response = await fetch(GET_PRODUCT_BY_SLUG(slug), {
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch product");
+    }
+
+    const { data } = (await response.json()) as {
+      data?: ProductWithRelations;
+    };
+    return data ?? null;
+  } catch (error) {
+    console.error("Error fetching product:", error);
+    return null;
   }
 }
 
