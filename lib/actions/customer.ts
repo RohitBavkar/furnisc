@@ -1,7 +1,12 @@
 "use server";
 
 import Stripe from "stripe";
-import DB from "@/lib/prisma";
+import {
+  getCustomerByEmail,
+  createCustomer,
+  updateCustomerStripeId,
+  updateCustomerClerkUserId,
+} from "@/dao/customerDao";
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error("STRIPE_SECRET_KEY is not defined");
@@ -12,6 +17,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 });
 
 /**
+ * Service Layer - Business logic for customer operations
  * Gets or creates a Stripe customer by email
  * Also syncs the customer to Prisma database
  */
@@ -20,10 +26,8 @@ export async function getOrCreateStripeCustomer(
   name: string,
   clerkUserId: string
 ): Promise<{ stripeCustomerId: string; prismaCustomerId: string }> {
-  // First, check if customer already exists in Prisma
-  const existingCustomer = await DB.customer.findUnique({
-    where: { email },
-  });
+  // First, check if customer already exists in Prisma (using DAO)
+  const existingCustomer = await getCustomerByEmail(email);
 
   if (existingCustomer?.stripeCustomerId) {
     // Customer exists, return existing IDs
@@ -56,17 +60,14 @@ export async function getOrCreateStripeCustomer(
     stripeCustomerId = newStripeCustomer.id;
   }
 
-  // Create or update customer in Prisma
+  // Create or update customer in Prisma (using DAO)
   if (existingCustomer) {
     // Update existing Prisma customer with Stripe ID
-    const updated = await DB.customer.update({
-      where: { id: existingCustomer.id },
-      data: {
-        stripeCustomerId,
-        clerkUserId,
-        name,
-      },
-    });
+    const updated = await updateCustomerStripeId(
+      existingCustomer.id,
+      stripeCustomerId
+    );
+    await updateCustomerClerkUserId(existingCustomer.id, clerkUserId);
     return {
       stripeCustomerId,
       prismaCustomerId: updated.id,
@@ -74,13 +75,11 @@ export async function getOrCreateStripeCustomer(
   }
 
   // Create new customer in Prisma
-  const newPrismaCustomer = await DB.customer.create({
-    data: {
-      email,
-      name,
-      clerkUserId,
-      stripeCustomerId,
-    },
+  const newPrismaCustomer = await createCustomer({
+    email,
+    name,
+    clerkUserId,
+    stripeCustomerId,
   });
 
   return {

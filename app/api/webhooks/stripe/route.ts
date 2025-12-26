@@ -2,6 +2,12 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import DB from "@/lib/prisma";
+import {
+  getCustomerByClerkUserId,
+  getCustomerByEmail,
+  createCustomer,
+  updateCustomerClerkUserId,
+} from "@/dao/customerDao";
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error("STRIPE_SECRET_KEY is not defined");
@@ -114,40 +120,28 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       .substring(2, 6)
       .toUpperCase()}`;
 
-    // Resolve or create customer in Prisma
+    // Resolve or create customer in Prisma using DAO
     const email = userEmail ?? session.customer_details?.email ?? "";
     const name =
       session.customer_details?.name ??
       (email ? email.split("@")[0] : "Customer");
 
-    let customer = null as { id: string } | null;
+    let customer: Awaited<ReturnType<typeof getCustomerByClerkUserId>> = null;
     if (clerkUserId) {
-      customer = await DB.customer.findUnique({
-        where: { clerkUserId },
-        select: { id: true },
-      });
+      customer = await getCustomerByClerkUserId(clerkUserId);
     }
     if (!customer && email) {
-      customer = await DB.customer.findUnique({
-        where: { email },
-        select: { id: true },
-      });
+      customer = await getCustomerByEmail(email);
     }
     if (!customer) {
-      customer = await DB.customer.create({
-        data: {
-          clerkUserId: clerkUserId ?? `guest-${Date.now()}`,
-          email: email || `guest-${Date.now()}@example.com`,
-          name,
-        },
-        select: { id: true },
+      customer = await createCustomer({
+        clerkUserId: clerkUserId ?? `guest-${Date.now()}`,
+        email: email || `guest-${Date.now()}@example.com`,
+        name,
       });
-    } else if (clerkUserId) {
+    } else if (clerkUserId && customer.clerkUserId !== clerkUserId) {
       // Ensure clerkUserId is linked if missing
-      await DB.customer.update({
-        where: { id: customer.id },
-        data: { clerkUserId },
-      });
+      await updateCustomerClerkUserId(customer.id, clerkUserId);
     }
 
     // Create order and update stock atomically via Prisma transaction
