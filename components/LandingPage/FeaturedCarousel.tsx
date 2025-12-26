@@ -16,12 +16,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn, formatPrice } from "@/lib/utils";
-import type { Product } from "@/types/product";
+import type { ProductWithRelations } from "@/service/productService";
 
-type FeaturedProduct = Product;
+type FeaturedProduct = ProductWithRelations;
 
 interface FeaturedCarouselProps {
-  products: Product[];
+  products: ProductWithRelations[];
 }
 
 export function FeaturedCarousel({ products }: FeaturedCarouselProps) {

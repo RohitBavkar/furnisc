@@ -5,20 +5,12 @@ import { PanelLeftClose, PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ProductFilters } from "./ProductFilters";
 import { ProductGrid } from "./ProductGrid";
-import type {
-  Category,
-  Product,
-  ProductImage,
-} from "@/app/generated/prisma/client";
-
-type ProductWithImages = Product & {
-  images: ProductImage[];
-  category: Category | null;
-};
+import type { Category } from "@/app/generated/prisma/client";
+import type { ProductWithRelations } from "@/service/productService";
 
 interface ProductSectionProps {
   categories: Category[];
-  products: ProductWithImages[];
+  products: ProductWithRelations[];
   searchQuery: string;
 }
 
