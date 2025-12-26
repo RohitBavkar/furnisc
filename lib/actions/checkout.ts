@@ -123,9 +123,9 @@ export async function createCheckoutSession(
     };
 
     // 8. Create Stripe Checkout Session
-    // Priority: NEXT_PUBLIC_BASE_URL > Vercel URL > localhost
+    // Priority: NEXT_PUBLIC_APP_URL > Vercel URL > localhost
     const baseUrl =
-      process.env.NEXT_PUBLIC_BASE_URL ||
+      process.env.NEXT_PUBLIC_APP_URL ||
       (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
       "http://localhost:3000";
 
