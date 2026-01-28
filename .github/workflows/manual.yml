@@ -1,0 +1,115 @@
+# This is a basic workflow that is manually triggered
+
+name: Develop to Release Bi-Weekly Merge
+
+# Controls when the action will run. Workflow runs when manually triggered using the UI
+# or API.
+on:
+  schedule:
+    # Every Thursday at 06:00 UTC (~11:30 AM IST)
+    - cron: "0 6 * * 4"
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  develop-to-release-merge:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ----------------------------------
+      # 1. Check Alternate Thursday Logic
+      # ----------------------------------
+      - name: Check alternate week
+        run: |
+          WEEK=$(date +%U)
+          echo "Current week number: $WEEK"
+          if [ $((WEEK % 2)) -ne 0 ]; then
+            echo "Not an alternate Thursday. Exiting workflow."
+            exit 0
+          fi
+
+      # ----------------------------------
+      # 2. Checkout Repository
+      # ----------------------------------
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ----------------------------------
+      # 3. Create PR develop → release
+      # ----------------------------------
+      - name: Create Pull Request develop → release
+        id: create_pr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          base: release
+          head: develop
+          title: "Automated develop → release merge (Bi-Weekly)"
+          body: |
+            This Pull Request was automatically created by GitHub Actions
+            as part of the scheduled bi-weekly release process.
+
+            If merge conflicts exist, please resolve them manually.
+          labels: develop-to-release, automated-release
+
+      # ----------------------------------
+      # 4. Check PR Mergeability
+      # ----------------------------------
+      - name: Check PR mergeable status
+        id: merge_check
+        run: |
+          PR_NUMBER=${{ steps.create_pr.outputs.pull-request-number }}
+
+          if [ -z "$PR_NUMBER" ]; then
+            echo "No PR created. Exiting workflow."
+            exit 0
+          fi
+
+          MERGEABLE=$(gh pr view $PR_NUMBER --json mergeable -q .mergeable)
+          echo "Mergeable status: $MERGEABLE"
+
+          if [ "$MERGEABLE" = "MERGEABLE" ]; then
+            echo "mergeable=true" >> $GITHUB_OUTPUT
+          else
+            echo "mergeable=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ----------------------------------
+      # 5. Notify Developers if Conflicts
+      # ----------------------------------
+      - name: Send email on merge conflict
+        if: steps.merge_check.outputs.mergeable == 'false'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "Merge Conflict: develop → release"
+          body: |
+            Hi Team,
+
+            A merge conflict was detected while merging develop into release.
+
+            Please resolve the conflicts manually using the PR below:
+            https://github.com/${{ github.repository }}/pull/${{ steps.create_pr.outputs.pull-request-number }}
+
+            Regards,
+            DevOps Automation
+          to: ${{ secrets.EMAIL_TO }}
+          from: ${{ secrets.EMAIL_FROM }}
+
+      # ----------------------------------
+      # 6. Auto-Merge if No Conflicts
+      # ----------------------------------
+      - name: Auto merge PR
+        if: steps.merge_check.outputs.mergeable == 'true'
+        run: |
+          gh pr merge ${{ steps.create_pr.outputs.pull-request-number }} \
+            --squash \
+            --auto \
+            --delete-branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
